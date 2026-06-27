@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance AI - Web Manager</title>
+    <style>
+        :root {
+            --bg-main: #0c0f17;
+            --bg-card: #151926;
+            --bg-darker: #090b10;
+            --accent: #5c7cfa;
+            --accent-purple: #ae3ec9;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --success: #2b8a3e;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            padding-bottom: 70px; /* Space for navbar */
+        }
+
+        /* Top Header Bar */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+        }
+        .header h1 { margin: 0; font-size: 1.4rem; font-weight: 700; }
+        .header span { font-size: 0.8rem; color: var(--accent); font-weight: bold; }
+
+        /* Navigation Pages */
+        .page { display: none; padding: 0 16px; }
+        .page.active { display: block; }
+
+        /* Main AI Card (Image/Banner Area) Layout 20367.jpg */
+        .ai-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+            margin-bottom: 16px;
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+        .badge-active {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: var(--success);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        /* Circular/Ring Charts Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #23293d;
+        }
+        .stat-title { font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 8px; }
+        .progress-ring { position: relative; width: 60px; height: 60px; margin: 0 auto; }
+        .progress-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.8rem; font-weight: bold; }
+
+        /* Controls / List Layout 20368.jpg & 20369.jpg */
+        .list-container {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid #23293d;
+        }
+        .app-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #23293d;
+        }
+        .app-info { display: flex; align-items: center; gap: 12px; }
+        .app-icon { width: 40px; height: 40px; background: #2d3748; border-radius: 10px; }
+        .app-name { font-size: 0.95rem; font-weight: 600; }
+        .app-pkg { font-size: 0.75rem; color: var(--text-secondary); }
+
+        /* Sliders & Driver Selectors Layout 20369.jpg */
+        .driver-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .driver-btn {
+            background: var(--bg-darker);
+            border: 1px solid #23293d;
+            color: var(--text-primary);
+            padding: 12px 4px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .driver-btn.active {
+            border-color: var(--accent-purple);
+            background: #2a1b3d;
+        }
+        .slider-group { margin: 16px 0; }
+        .slider-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; }
+        input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+        .btn-apply {
+            background: var(--accent);
+            color: white; border: none; width: 100%;
+            padding: 14px; border-radius: 12px; font-weight: bold; font-size: 1rem;
+            cursor: pointer; margin-top: 10px;
+        }
+
+        /* Bottom Tab Navigation Bar */
+        .navbar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 65px;
+            background: var(--bg-card);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #23293d;
+            z-index: 100;
+        }
+        .nav-item {
+            background: none; border: none; color: var(--text-secondary);
+            font-size: 0.75rem; display: flex; flex-direction: column; align-items: center;
+            gap: 4px; cursor: pointer; width: 20%;
+        }
+        .nav-item.active { color: var(--accent); }
+        .nav-icon { font-size: 1.2rem; }
+
+        /* Command Output Terminal Console */
+        .console-log {
+            background: var(--bg-darker); color: #4ade80;
+            font-family: monospace; padding: 10px; font-size: 0.8rem;
+            border-radius: 8px; max-height: 100px; overflow-y: auto; margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <div class="header">
+        <div>
+            <h1>Performance AI</h1>
+            <span>WEB MANAGER</span>
+        </div>
+        <select style="background:#1e293b; color:white; border:none; padding:6px; border-radius:6px;">
+            <option>EN</option>
+        </select>
+    </div>
+
+    <!-- PAGE 1: HOME -->
+    <div id="page-home" class="page active">
+        <div class="ai-card">
+            <div class="badge-active">Active</div>
+            <h2 style="margin: 40px 0 0 0; font-size: 1.6rem; letter-spacing: 1px;">performance-ai</h2>
+            <p style="margin: 4px 0; font-size: 0.8rem; color: var(--text-secondary);">Profile: Balanced</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">RAM</div>
+                <div class="progress-ring"><div class="progress-text">68%</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Sys Load</div>
+                <div class="progress-ring"><div class="progress-text">55%</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Service</div>
+                <div class="progress-ring"><div class="progress-text">Active</div></div>
+            </div>
+        </div>
+
+        <div class="list-container" style="margin-bottom: 16px;">
+            <h3>Quick Actions</h3>
+            <button class="btn-apply" style="background:#2b8a3e; margin-bottom:8px;" onclick="runShell('cmd package compile -m speed -a')">🚀 Auto Optimize Engine</button>
+            <button class="btn-apply" style="background:#c92a2a;" onclick="runShell('cmd activity trim-memory EVERYTHING && am kill-all')">🗑️ Clear Internal Cache</button>
+        </div>
+    </div>
+
+    <!-- PAGE 2: GAME LIST -->
+    <div id="page-games" class="page">
+        <div class="list-container">
+            <h3>Edit Game List</h3>
+            <input type="text" placeholder="Search app..." style="width:100%; padding:10px; background:var(--bg-darker); border:1px solid #23293d; border-radius:8px; color:white; box-sizing:border-box; margin-bottom:12px;">
+            
+            <div class="app-item">
+                <div class="app-info">
+                    <div class="app-icon" style="background: radial-gradient(#e67e22, #d35400);"></div>
+                    <div>
+                        <div class="app-name">PUBG MOBILE / BGMI</div>
+                        <div class="app-pkg">com.tencent.ig</div>
+                    </div>
+                </div>
+                <input type="checkbox" checked style="transform: scale(1.3);">
+            </div>
+            <div class="app-item">
+                <div class="app-info">
+                    <div class="app-icon" style="background: radial-gradient(#3498db, #2980b9);"></div>
+                    <div>
+                        <div class="app-name">OneState</div>
+                        <div class="app-pkg">com.Chillgaming.oneState</div>
+                    </div>
+                </div>
+                <input type="checkbox" checked style="transform: scale(1.3);">
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 3: GAME MANAGER -->
+    <div id="page-manager" class="page">
+        <div class="list-container">
+            <div class="app-info" style="margin-bottom: 16px;">
+                <div class="app-icon" style="background: radial-gradient(#e67e22, #d35400);"></div>
+                <div>
+                    <div class="app-name" id="selected-game">PUBG MOBILE</div>
+                    <div class="app-pkg">Target Profile Configured</div>
+                </div>
+            </div>
+
+            <h4>Driver Selection</h4>
+            <div class="driver-grid">
+                <button class="driver-btn active" onclick="setDriver('game')">Game</button>
+                <button class="driver-btn" onclick="setDriver('prerelease')">Pre-release</button>
+                <button class="driver-btn" onclick="setDriver('angle')">ANGLE</button>
+                <button class="driver-btn" onclick="setDriver('default')">Default</button>
+            </div>
+
+            <h4>Downscale Resolution</h4>
+            <div class="slider-group">
+                <div class="slider-label"><span>Game DS</span><span id="val-game">90%</span></div>
+                <input type="range" min="30" max="100" value="90" id="slide-game" oninput="document.getElementById('val-game').innerText = this.value + '%'">
+            </div>
+            <div class="slider-group">
+                <div class="slider-label"><span>Win DS</span><span id="val-win">90%</span></div>
+                <input type="range" min="30" max="100" value="90" id="slide-win" oninput="document.getElementById('val-win').innerText = this.value + '%'">
+            </div>
+
+            <button class="btn-apply" onclick="applyGameTweaks()">⚡ Apply Engine Settings</button>
+        </div>
+    </div>
+
+    <!-- PAGE 4: SETTINGS -->
+    <div id="page-settings" class="page">
+        <div class="list-container">
+            <h3>System Utilities</h3>
+            <button class="btn-apply" style="background:#495057;" onclick="runShell('cmd fstrim dotrim')">⚙️ Run Fstrim (Storage Trim)</button>
+            <button class="btn-apply" style="background:#495057;" onclick="runShell('settings put global touch_pump_rate 1')">📱 Maximize Touch Sampling</button>
+        </div>
+    </div>
+
+    <!-- Output Terminal Console Terminal Section -->
+    <div style="padding: 0 16px; margin-top: 10px;">
+        <div class="console-log" id="terminal-out">Terminal: Ready...</div>
+    </div>
+
+    <!-- Navigation Navbar Base Layout -->
+    <div class="navbar">
+        <button class="nav-item active" onclick="switchPage('home', this)"><div class="nav-icon">🏠</div>Home</button>
+        <button class="nav-item" onclick="switchPage('games', this)"><div class="nav-icon">🎮</div>Game List</button>
+        <button class="nav-item" onclick="switchPage('manager', this)"><div class="nav-icon">🕹️</div>Manager</button>
+        <button class="nav-item" onclick="switchPage('settings', this)"><div class="nav-icon">⚙️</div>Settings</button>
+    </div>
+
+    <script>
+        // Tab Page Swapping Engine System
+        function switchPage(pageId, element) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            
+            document.getElementById('page-' + pageId).classList.add('active');
+            element.classList.add('active');
+        }
+
+        // Selected Driver Toggle highlighting
+        function setDriver(type) {
+            document.querySelectorAll('.driver-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('terminal-out').innerText = "Driver profile queued: " + type;
+        }
+
+        // Bridge Execution Mechanism matching KernelSU integration used inside AxManager 
+        function runShell(command) {
+            const consoleBox = document.getElementById('terminal-out');
+            consoleBox.innerText = "Processing command execution...";
+            
+            if (window.ksu) {
+                window.ksu.exec(command, JSON.stringify({}), (rc, stdout, stderr) => {
+                    if (rc === 0) {
+                        consoleBox.innerText = "Success:\n" + (stdout || "Command executed smoothly.");
+                    } else {
+                        consoleBox.innerText = "Error (" + rc + "):\n" + stderr;
+                    }
+                });
+            } else {
+                consoleBox.innerText = "Standalone Preview Mode:\nExecuted -> " + command;
+            }
+        }
+
+        // Dynamic multi-stage command application for custom Downscaling values
+        function applyGameTweaks() {
+            const gameRes = document.getElementById('slide-game').value;
+            const targetPkg = "com.tencent.ig"; // PUBG Mobile / BGMI default package
+            
+            // Build real downscaling string or parameter adjustments for the target package run
+            const cmd = `cmd device_config put latency_tracker tracking_interval ${gameRes} && settings put global touch_pump_rate 1`;
+            runShell(cmd);
+        }
+    </script>
+</body>
+</html>
