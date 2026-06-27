@@ -1,0 +1,7 @@
+id=turbo_performance_boost
+name=Axeron Turbo Optimizer
+version=v1.0
+versionCode=1
+author=Developer
+description=Rootless performance module for maximum gaming smoothness, touch response, and background RAM management.
+axeronPlugin=10400
